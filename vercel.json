@@ -1,8 +1,4 @@
 {
-  "functions": {
-    "api/resolve.mjs": {
-      "maxDuration": 30,
-      "memory": 2048
-    }
-  }
+  "version": 2,
+  "public": true
 }
