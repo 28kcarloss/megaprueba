@@ -1,16 +1,18 @@
 {
-  "name": "videoteca-automatizada-robusta",
+  "name": "videoteca-automatizada-final",
   "version": "1.0.0",
   "description": "Videoteca con actualizador automático vía GitHub Actions",
   "type": "module",
   "scripts": {
     "scrape-base": "node scraper.js",
-    "update-live": "node updater.js"
+    "update-live-local": "node updater.js",
+    "deploy-vercel": "vercel --prod"
   },
   "dependencies": {
     "@sparticuz/chromium": "^123.0.1",
     "fs-extra": "^11.2.0",
     "node-fetch": "^3.3.2",
+    "puppeteer": "^22.10.0",
     "puppeteer-core": "^22.10.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2"

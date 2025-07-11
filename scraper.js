@@ -1,27 +1,26 @@
-import puppeteer from 'puppeteer-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import puppeteer from 'puppeteer'; 
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fetch from 'node-fetch';
 
-puppeteer.use(StealthPlugin());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- CONFIGURACIÓN: AÑADE AQUÍ LOS IDs DE LAS PELÍCULAS QUE QUIERES ---
+// --- CONFIGURACIÓN ---
 const TARGET_IDS = [
     '823464', // Godzilla x Kong
     '507089'  // Five Nights at Freddy's
 ];
-// ---------------------------------------------------------------------
+const ALLOWED_SERVERS = ['streamwish', 'filemoon', 'vidhide'];
+// --------------------
 
 const CUEVANA_BASE_URL = 'https://www.cuevana.is';
 const DATABASE_PATH = path.join(__dirname, 'database.json');
 const TMDB_API_KEY = '44a281a88c65bfa293fccc36ef45ebdd';
 
 async function runScraper() {
-    console.log(`[SCRAPER] --- INICIANDO BÚSQUEDA DE IFRAMES PARA ${TARGET_IDS.length} PELÍCULAS ---`);
+    console.log(`[SCRAPER] --- INICIANDO BÚSQUEDA DE IFRAMES (SOLO SERVIDORES PERMITIDOS) ---`);
     const browser = await puppeteer.launch({ headless: "new" });
     const existingDb = await fs.readJson(DATABASE_PATH).catch(() => ({}));
 
@@ -35,7 +34,7 @@ async function runScraper() {
     }
     await browser.close();
     await fs.writeJson(DATABASE_PATH, existingDb, { spaces: 2 });
-    console.log("\n[SCRAPER] --- SCRAPING FINALIZADO. 'database.json' actualizado. ---");
+    console.log("\n[SCRAPER] --- SCRAPING FINALIZADO. 'database.json' actualizado con servidores filtrados. ---");
 }
 
 async function scrapeMovie(browser, tmdbId, db) {
@@ -52,7 +51,14 @@ async function scrapeMovie(browser, tmdbId, db) {
 
         let allServers = [];
         const processVideos = (videoList, language) => {
-            if (videoList) videoList.forEach(v => allServers.push({ language, serverName: v.cyberlocker.toLowerCase(), iframeUrl: v.result }));
+            if (videoList) {
+                videoList.forEach(v => {
+                    const serverName = v.cyberlocker.toLowerCase();
+                    if (ALLOWED_SERVERS.includes(serverName)) {
+                        allServers.push({ language, serverName: serverName, iframeUrl: v.result });
+                    }
+                });
+            }
         };
         processVideos(nextData.props.pageProps.thisMovie.videos.latino, 'Latino');
         processVideos(nextData.props.pageProps.thisMovie.videos.spanish, 'Español');
@@ -65,7 +71,7 @@ async function scrapeMovie(browser, tmdbId, db) {
                 servers: allServers,
                 lastScraped: new Date().toISOString()
             };
-            console.log(`[SCRAPER] ${allServers.length} iframes guardados para "${movieDetails.title}".`);
+            console.log(`[SCRAPER] ${allServers.length} iframes filtrados y guardados para "${movieDetails.title}".`);
         }
     } finally {
         await page.close();
