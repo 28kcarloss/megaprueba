@@ -1,5 +1,5 @@
 # Ignorar dependencias de Node
-node_modules
+
 
 # Ignorar archivos del sistema operativo
 .DS_Store
