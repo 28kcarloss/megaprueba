@@ -1,0 +1,19 @@
+{
+  "name": "mi-videoteca-final",
+  "version": "1.0.0",
+  "description": "Videoteca con actualizador automático vía GitHub Actions",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "scrape-base": "node scraper.js",
+    "update-live-local": "node updater.js",
+    "deploy-vercel": "vercel --prod"
+  },
+  "dependencies": {
+    "fs-extra": "^11.2.0",
+    "node-fetch": "^3.3.2",
+    "puppeteer": "^22.10.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}

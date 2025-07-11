@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Videoteca</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        :root { --main-red: #e50914; --background-color: #141414; --card-color: #1f1f1f; --text-color: #f5f5f5; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--background-color); color: var(--text-color); margin: 0; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .header { text-align: center; margin-bottom: 3rem; }
+        .header h1 { font-size: 3rem; color: var(--main-red); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+        .movie-catalog { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; }
+        .movie-card { background-color: var(--card-color); border-radius: 8px; overflow: hidden; text-decoration: none; color: var(--text-color); display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative; }
+        .movie-card:hover { transform: translateY(-10px); box-shadow: 0 12px 30px rgba(0,0,0,0.6); }
+        .movie-poster-container { position: relative; }
+        .movie-card-poster { display: block; width: 100%; aspect-ratio: 2 / 3; object-fit: cover; background-color: #333; }
+        .movie-poster-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent 60%); opacity: 0; transition: opacity 0.3s ease; }
+        .movie-card:hover .movie-poster-overlay { opacity: 1; }
+        .play-icon { font-size: 4rem; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; }
+        .movie-card:hover .play-icon { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        .movie-card-info { padding: 1rem; }
+        .movie-card-title { font-size: 1.1rem; font-weight: 700; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .movie-card-year { font-size: 0.9rem; color: #aaa; margin-top: 0.25rem; }
+        #loader { text-align: center; font-size: 1.2rem; padding: 4rem; color: var(--main-red); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header"><h1>Mi Videoteca</h1></header>
+        <div id="movie-catalog" class="movie-catalog">
+            <p id="loader">Cargando películas...</p>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const catalog = document.getElementById('movie-catalog');
+            const loader = document.getElementById('loader');
+            const TMDB_API_KEY = '44a281a88c65bfa293fccc36ef45ebdd';
+
+            try {
+                const response = await fetch('/live_database.json');
+                if (!response.ok) throw new Error('La base de datos de videos no está disponible. El sitio se actualizará pronto.');
+                
+                const database = await response.json();
+                const moviesArray = Object.keys(database).map(key => ({ id: key, ...database[key] }));
+                moviesArray.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
+
+                if (moviesArray.length === 0) {
+                    loader.textContent = "No hay películas disponibles en este momento.";
+                    return;
+                }
+                loader.remove();
+
+                const movieCardPromises = moviesArray.map(async (movie) => {
+                    try {
+                        const posterResponse = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}`);
+                        if (!posterResponse.ok) throw new Error('Fallo en la API de TMDB');
+                        const tmdbData = await posterResponse.json();
+                        
+                        const posterPath = tmdbData.poster_path 
+                            ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` 
+                            : 'https://via.placeholder.com/200x300.png?text=No+Poster';
+                        
+                        const year = movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : 'N/A';
+                        
+                        const movieCard = document.createElement('a');
+                        movieCard.classList.add('movie-card');
+                        movieCard.href = `player.html?id=${movie.id}`;
+                        movieCard.innerHTML = `
+                            <div class="movie-poster-container">
+                                <img class="movie-card-poster" src="${posterPath}" alt="Póster de ${movie.title}" loading="lazy">
+                                <div class="movie-poster-overlay"></div>
+                                <div class="play-icon">▶</div>
+                            </div>
+                            <div class="movie-card-info">
+                                <h3 class="movie-card-title">${movie.title}</h3>
+                                <p class="movie-card-year">${year}</p>
+                            </div>`;
+                        return movieCard;
+                    } catch (e) {
+                        return null;
+                    }
+                });
+
+                const movieCards = await Promise.all(movieCardPromises);
+                movieCards.forEach(card => {
+                    if (card) catalog.appendChild(card);
+                });
+
+            } catch (error) {
+                loader.textContent = error.message;
+            }
+        });
+    </script>
+</body>
+</html>
