@@ -2,120 +2,13 @@
   "507089": {
     "title": "Five Nights at Freddy's",
     "releaseDate": "2023-10-25",
-    "servers": [
-      {
-        "language": "Latino",
-        "serverName": "streamwish",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=rxPRsRSX4IlkyS1F21W5j50YhFUGTWjknIwxmFwuv3G8My9ZRdWx0qCIgsMSxqA_",
-        "m3u8Url": "https://qpljyz39awcoenfd.premilkyway.com/hls2/01/02137/0casbog5ir9k_h/master.m3u8?t=ZKcnNdc02nT6sQkxvbH7PjUMVV01yyc__TWlO3GN-Gs&s=1752256470&e=129600&f=14073193&srv=z13jtbat10fahdh456&i=0.4&sp=500&p1=z13jtbat10fahdh456&p2=z13jtbat10fahdh456&asn=272882",
-        "lastChecked": "2025-07-11T17:54:38.162Z"
-      },
-      {
-        "language": "Latino",
-        "serverName": "filemoon",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=L_S5.I9TT8gF_oMzWJhf_akqMnvruqcRsk_VrQiAQJ0uJJXvebdmj7ruUSXDYkbs",
-        "m3u8Url": "https://be7713.rcr82.waw05.i8yz83pn.com/hls2/02/04863/0053925syfod_x/master.m3u8?t=gytSaMmC3_XkGtVC37pziN3C0PzU2ylGwsGZXAn6p2s&s=1752256488&e=10800&f=29627320&srv=26&asn=272882&sp=5500&p=",
-        "lastChecked": "2025-07-11T17:54:55.101Z"
-      },
-      {
-        "language": "Latino",
-        "serverName": "vidhide",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=3HIdfUNk1x9FKqhEuaYLNvuqc78DUOs737vT2B2fzCIkkG1RXNAWcFqtBYc6mHYi",
-        "m3u8Url": "https://1gvkha3jxkktydo.acek-cdn.com/hls2/01/01150/d56jpy01htj0_n/master.m3u8?t=noRmF-eG9fOxCXOH7_T8zWqS7QWowX9JE6wJHi1TMPk&s=1752256505&e=129600&f=5754920&srv=F6vE2P5Wjncn&i=0.4&sp=500&p1=F6vE2P5Wjncn&p2=F6vE2P5Wjncn&asn=272882",
-        "lastChecked": "2025-07-11T17:55:13.026Z"
-      },
-      {
-        "language": "Español",
-        "serverName": "streamwish",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=rxPRsRSX4IlkyS1F21W5j17PyJPrgxG1LqW.82TCDq6QCByPuZZKDNfBab3VPLeE",
-        "m3u8Url": "https://62lcxnbxr456.premilkyway.com/hls2/01/02814/wuzfo06l16i9_,n,h,x,.urlset/master.m3u8?t=RaYGPYQr2pxCZ4L0wvTACBr8_JsRLhcUYMJKMFeFISY&s=1752256647&e=129600&f=14073614&srv=ma1vmsqmq&i=0.4&sp=500&p1=ma1vmsqmq&p2=ma1vmsqmq&asn=272882",
-        "lastChecked": "2025-07-11T17:57:35.833Z"
-      },
-      {
-        "language": "Español",
-        "serverName": "filemoon",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=L_S5.I9TT8gF_oMzWJhf_eptHwlK6_dLUx6wFTlLAA_MaYeFtE8ll6M7v4QKNPWm",
-        "m3u8Url": "https://be2719.rcr22.ams01.i8yz83pn.com/hls2/01/05325/1zs1hg9f4kkr_x/master.m3u8?t=SlwWIXZDW_TvcoeHvEj4HsyMJcjfuGzB-ROVZft19FY&s=1752256667&e=10800&f=29627322&srv=23&asn=272882&sp=5500&p=",
-        "lastChecked": "2025-07-11T17:57:53.447Z"
-      },
-      {
-        "language": "Subtitulado",
-        "serverName": "streamwish",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=rxPRsRSX4IlkyS1F21W5j_ankRYcG7XnB4QIoL0lZneDQs8WMB8DNe_zCejAfi2i",
-        "m3u8Url": "https://x8oi6owwkjoewr.premilkyway.com/hls2/01/02814/wh8npa096hqq_,n,h,.urlset/master.m3u8?t=AKV5EfgY_NDQV4eHHzxPIMjqejSRYAEXGvQckXqmhNk&s=1752256775&e=129600&f=14073832&srv=ma1vmsqmq&i=0.4&sp=500&p1=ma1vmsqmq&p2=ma1vmsqmq&asn=272882",
-        "lastChecked": "2025-07-11T17:59:41.391Z"
-      },
-      {
-        "language": "Subtitulado",
-        "serverName": "filemoon",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=L_S5.I9TT8gF_oMzWJhf_bnURUz5NimSIjI2Htgg_BLVZCn5Ioh8AXXhSX1r4343",
-        "m3u8Url": "https://fin-3dg-b1.i8yz83pn.com/hls2/01/04863/ahanj50g7yj9_x/master.m3u8?t=GkJ0ZlCnPHr_L-CcfWg0-vdzA_6ShtcdgB5zAp5XZ9U&s=1752256791&e=10800&f=29627324&srv=23&asn=272882&sp=5500&p=",
-        "lastChecked": "2025-07-11T17:59:56.902Z"
-      }
-    ],
+    "servers": [],
     "lastScraped": "2025-07-11T17:35:49.347Z"
   },
   "823464": {
     "title": "Godzilla y Kong: El nuevo imperio",
     "releaseDate": "2024-03-27",
-    "servers": [
-      {
-        "language": "Latino",
-        "serverName": "streamwish",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=rxPRsRSX4IlkyS1F21W5jxw13G6i5T0K5cGIwo54fb1MVgOmU.q8ax8OmTzMm1TA",
-        "m3u8Url": "https://wnsa7jyhmnmt12.premilkyway.com/hls2/01/03830/5a748ahgndus_,n,h,.urlset/master.m3u8?t=d6vx9mU2Pw3aBn5k0F-kETBfcnHO00EBo6H4PsndMvw&s=1752256865&e=129600&f=19150634&srv=jubDiYuWLQCqfHI&i=0.4&sp=500&p1=jubDiYuWLQCqfHI&p2=jubDiYuWLQCqfHI&asn=272882",
-        "lastChecked": "2025-07-11T18:01:11.565Z"
-      },
-      {
-        "language": "Latino",
-        "serverName": "filemoon",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=L_S5.I9TT8gF_oMzWJhf_WSUVSAA1XG0XqEUfZljq_DRqk6lZEFXjvhD1WTeoSH7",
-        "m3u8Url": "https://be6721.rcr72.waw04.i8yz83pn.com/hls2/05/06130/nl9qf5xxpbfg_h/master.m3u8?t=r65XSHmnamGWjKw9Q7Qf8Oh766DDdsP8m9zKpv5LLic&s=1752256883&e=10800&f=46962310&srv=1065&asn=272882&sp=4000&p=",
-        "lastChecked": "2025-07-11T18:01:29.498Z"
-      },
-      {
-        "language": "Latino",
-        "serverName": "vidhide",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=Nt6DnBaJ_hOcjWbELk7u0I4SA9KD1XnZ5pLmAAXUAJMOytRl7I6B6Z2aipRKbWZH",
-        "m3u8Url": "https://rnzt2t4xvku08.acek-cdn.com/hls2/01/01862/oht2y4x2zcfv_,l,n,.urlset/master.m3u8?t=nYOToyhCZukKlZlsjkof8nZJG4fd0Tus1x8eun6TrEo&s=1752256898&e=129600&f=18789361&srv=r0zxJ9MoB6wU&i=0.4&sp=500&p1=r0zxJ9MoB6wU&p2=r0zxJ9MoB6wU&asn=272882",
-        "lastChecked": "2025-07-11T18:01:45.281Z"
-      },
-      {
-        "language": "Español",
-        "serverName": "streamwish",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=rxPRsRSX4IlkyS1F21W5j0QpOCSfHhjZIbZmi3zqQr6ra7q19SDjjsJIjfbRCeg5",
-        "m3u8Url": "https://wfoqwegqwcofgtb.premilkyway.com/hls2/01/03873/o39a8eeiq8ys_,n,h,.urlset/master.m3u8?t=oSgSMMq_onDORWgc0DXim6Bqz_v4aXhSw4usYxgZ0EE&s=1752257004&e=129600&f=19368119&srv=vy7cie2tqwc2cgp&i=0.4&sp=500&p1=vy7cie2tqwc2cgp&p2=vy7cie2tqwc2cgp&asn=272882",
-        "lastChecked": "2025-07-11T18:03:30.526Z"
-      },
-      {
-        "language": "Español",
-        "serverName": "filemoon",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=L_S5.I9TT8gF_oMzWJhf_fSF83wpDCblvyolxj5KacUCo3wbJjMz7gDNVhgPoif6",
-        "m3u8Url": "https://fin-3dg-b1.i8yz83pn.com/hls2/09/06137/yg5y2rzfdpyv_h/master.m3u8?t=NosYLuL_9j7d2MtVFyAqZmNFaaeiFW55E3vfgnxqLxE&s=1752257021&e=10800&f=46961225&srv=1065&asn=272882&sp=4000&p=",
-        "lastChecked": "2025-07-11T18:03:46.699Z"
-      },
-      {
-        "language": "Subtitulado",
-        "serverName": "streamwish",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=rxPRsRSX4IlkyS1F21W5j45GlCXvwXnUuXeyIMWyNlvVKV.5EAykmmS_XlonHOcV",
-        "m3u8Url": "https://wfoqwegqwcofgtb.premilkyway.com/hls2/01/03830/s1g5fd7opv6k_,n,h,.urlset/master.m3u8?t=gNm2zKVyhICF42xLrC3C_F6ihwwjC1Z5JWaKIzX614I&s=1752257095&e=129600&f=19151479&srv=R7khaR4Jtgqr&i=0.4&sp=500&p1=R7khaR4Jtgqr&p2=R7khaR4Jtgqr&asn=272882",
-        "lastChecked": "2025-07-11T18:05:01.865Z"
-      },
-      {
-        "language": "Subtitulado",
-        "serverName": "filemoon",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=L_S5.I9TT8gF_oMzWJhf_VkiTzkpvNRcBYAXI2OkjdQyBprcF2iOLE.ngm2JSdjB",
-        "m3u8Url": "https://be4235.rcr32.ams02.i8yz83pn.com/hls2/07/06131/iegkoed6klcj_h/master.m3u8?t=G-4VLqlz8Z1nDjWkgCWMehdLT5BBVrwo2Q81dVaxWpg&s=1752257111&e=10800&f=46961224&srv=1065&asn=272882&sp=4000&p=",
-        "lastChecked": "2025-07-11T18:05:17.081Z"
-      },
-      {
-        "language": "Subtitulado",
-        "serverName": "vidhide",
-        "iframeUrl": "https://player.cuevana.is/player.php?h=Nt6DnBaJ_hOcjWbELk7u0AtTL1lLupMF8w9zSzNi9mxMMbPkJ5P0qj1eNq_HZZWA",
-        "m3u8Url": "https://qdihmnfwepxni.ovaltinecdn.com/hls2/01/01862/ws4o5nev4u2l_,l,n,.urlset/master.m3u8?t=AjWtPNzcH-yh06p3YEH9avogI9CdQv8YlHga-PA8tEM&s=1752257126&e=129600&f=9310594&srv=cutra8JDUV80&i=0.4&sp=500&p1=cutra8JDUV80&p2=cutra8JDUV80&asn=272882",
-        "lastChecked": "2025-07-11T18:05:33.062Z"
-      }
-    ],
+    "servers": [],
     "lastScraped": "2025-07-11T17:35:47.915Z"
   }
 }
