@@ -11,9 +11,16 @@ const __dirname = path.dirname(__filename);
 const BASE_DB_PATH = path.join(__dirname, 'database.json');
 const LIVE_DB_PATH = path.join(__dirname, 'live_database.json');
 
+// Opciones de Puppeteer para el entorno sin pantalla de GitHub Actions
 const puppeteerOptions = {
-    headless: false, // <-- CAMBIO 1: Lo ponemos en false para VER qué está pasando
-    args: ['--window-size=1280,720', '--disable-notifications'],
+    headless: "new", // <-- ÚNICO CAMBIO: Lo volvemos a poner en modo "headless"
+    args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--window-size=1280,720', // Mantenemos el tamaño de ventana simulado
+        '--disable-notifications'
+    ],
     ignoreDefaultArgs: ['--enable-automation'],
 };
 
@@ -31,38 +38,25 @@ async function resolveM3u8(iframeUrl) {
                 if (url.includes('.m3u8')) {
                     if (!m3u8Url) {
                         m3u8Url = url;
-                        console.log(`\n  [INTERCEPTADO] -> ${url.substring(0, 100)}...`);
                         resolve(url);
                     }
                 }
             });
         });
 
-        // CAMBIO 2: Aumentamos el timeout general de navegación
         await page.goto(iframeUrl, { waitUntil: 'networkidle2', timeout: 60000 });
 
-        // CAMBIO 3: Simulación de interacción más humana
         try {
-            // Esperamos a que cualquier posible overlay o botón de play sea visible
             await page.waitForSelector('body', { timeout: 5000 });
-            console.log("  -> Cuerpo de la página cargado. Intentando clic.");
-            // Hacemos clic en el centro de la página para activar el reproductor
             await page.mouse.click(640, 360, { delay: 100 });
         } catch (e) {
-            console.log("  -> No se pudo hacer clic o el elemento no apareció a tiempo (puede ser normal).");
+            // No hacemos nada si falla, puede ser normal
         }
         
-        // CAMBIO 4: Aumentamos el tiempo de espera para la intercepción
-        console.log("  -> Esperando a que la red cargue el M3U8...");
         await Promise.race([m3u8Promise, new Promise(r => setTimeout(r, 25000))]);
-        
         return m3u8Url;
     } finally {
-        // CAMBIO 5: Espera antes de cerrar para que puedas ver el resultado
-        if (browser) {
-            await new Promise(r => setTimeout(r, 3000)); // Pausa de 3 segundos
-            await browser.close();
-        }
+        if (browser) await browser.close();
     }
 }
 
@@ -78,17 +72,17 @@ async function updateLiveDatabase() {
             liveDb[movieId] = { ...movie, servers: [] };
 
             for (const server of movie.servers) {
-                console.log(`  -> Resolviendo: ${server.serverName}...`);
+                process.stdout.write(`  -> Resolviendo: ${server.serverName}... `);
                 try {
                     const m3u8Url = await resolveM3u8(server.iframeUrl);
                     if (m3u8Url) {
-                        console.log("    [ÉXITO] M3U8 encontrado y guardado. ✅");
+                        process.stdout.write("ÉXITO ✅\n");
                         liveDb[movieId].servers.push({ ...server, m3u8Url, lastChecked: new Date().toISOString() });
                     } else {
-                        console.log("    [FALLO] No se encontró M3U8 para este servidor. ❌");
+                        process.stdout.write("FALLO ❌\n");
                     }
                 } catch (e) {
-                    console.error(`    [ERROR] Fallo crítico al resolver: ${e.message} ❗`);
+                    process.stdout.write(`ERROR ❗\n`);
                 }
             }
         }
