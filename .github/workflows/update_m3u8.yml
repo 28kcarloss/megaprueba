@@ -19,16 +19,18 @@ jobs:
           node-version: '18'
           cache: 'npm'
       
-      # NO necesitamos el paso de apt-get con sparticuz-chromium
-      
-      - name: 3. Instalar Dependencias del Proyecto (Modo Limpio)
-        # npm ci es más rápido y fiable para entornos automatizados
+      - name: 3. Instalar Dependencias de Navegador
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libdbus-1-3 libxkbcommon0 libatspi2.0-0 libx11-xcb1 libxcb-dri3-0 libxtst6 libxss1 libasound2 libgbm1 libxshmfence1
+
+      - name: 4. Instalar Dependencias del Proyecto
         run: npm ci
 
-      - name: 4. Ejecutar Script de Actualización
+      - name: 5. Ejecutar Script de Actualización
         run: node updater.js
 
-      - name: 5. Guardar y Subir Cambios (si los hay)
+      - name: 6. Guardar y Subir Cambios
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "bot@github.com"
