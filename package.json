@@ -1,13 +1,11 @@
 {
-  "name": "mi-videoteca-final",
+  "name": "megadoom-videoteca",
   "version": "1.0.0",
-  "description": "Videoteca con actualizador automático vía GitHub Actions",
-  "main": "index.js",
+  "description": "Videoteca con actualizador automático",
   "type": "module",
   "scripts": {
     "scrape-base": "node scraper.js",
-    "update-live-local": "node updater.js",
-    "deploy-vercel": "vercel --prod"
+    "update-live-local": "node updater.js"
   },
   "dependencies": {
     "fs-extra": "^11.2.0",

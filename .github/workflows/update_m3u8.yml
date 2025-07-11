@@ -1,0 +1,42 @@
+name: Actualizar Enlaces de Video
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar código del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js v18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Instalar dependencias del navegador
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libdbus-1-3 libxkbcommon0 libatspi2.0-0 libx11-xcb1 libxcb-dri3-0 libxtst6 libxss1 libasound2 libgbm1 libxshmfence1
+
+      - name: Instalar dependencias del proyecto
+        run: npm install
+
+      - name: Ejecutar el script Updater
+        run: node updater.js
+
+      - name: Guardar y subir cambios a GitHub (si los hay)
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "bot@github.com"
+          git add live_database.json
+          if ! git diff --quiet --cached live_database.json; then
+            git commit -m "chore(bot): Actualizar enlaces de video en vivo"
+            git push
+          else
+            echo "No se encontraron cambios en los enlaces. No se requiere commit."
+          fi
