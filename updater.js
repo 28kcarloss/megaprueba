@@ -11,10 +11,11 @@ const __dirname = path.dirname(__filename);
 const BASE_DB_PATH = path.join(__dirname, 'database.json');
 const LIVE_DB_PATH = path.join(__dirname, 'live_database.json');
 
-// Opciones de Puppeteer para el entorno de GitHub Actions (Linux)
+// Opciones de Puppeteer para ejecución local en Windows
 const puppeteerOptions = {
     headless: "new",
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--single-process'],
+    args: ['--window-size=1920,1080'],
+    ignoreDefaultArgs: ['--enable-automation'],
 };
 
 async function resolveM3u8(iframeUrl) {
@@ -22,8 +23,7 @@ async function resolveM3u8(iframeUrl) {
     try {
         browser = await puppeteer.launch(puppeteerOptions);
         const page = await browser.newPage();
-        // Nos hacemos pasar por un navegador normal en Linux para evitar bloqueos
-        await page.setUserAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36');
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36');
         
         let m3u8Url = null;
         const m3u8Promise = new Promise(resolve => {
@@ -55,7 +55,7 @@ async function updateLiveDatabase() {
         for (const movieId in baseDb) {
             const movie = baseDb[movieId];
             console.log(`\n[UPDATER] Procesando: ${movie.title}`);
-            liveDb[movieId] = { ...movie, servers: [] }; // Preparamos la nueva entrada
+            liveDb[movieId] = { ...movie, servers: [] };
 
             for (const server of movie.servers) {
                 process.stdout.write(`  -> Resolviendo: ${server.serverName}... `);
