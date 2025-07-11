@@ -19,8 +19,11 @@ jobs:
           node-version: '18'
           cache: 'npm'
       
-      - name: 3. Instalar Dependencias del Proyecto
-        run: npm install
+      # NO necesitamos el paso de apt-get con sparticuz-chromium
+      
+      - name: 3. Instalar Dependencias del Proyecto (Modo Limpio)
+        # npm ci es más rápido y fiable para entornos automatizados
+        run: npm ci
 
       - name: 4. Ejecutar Script de Actualización
         run: node updater.js
