@@ -1,5 +1,6 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import chromium from '@sparticuz/chromium';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -10,60 +11,71 @@ const __dirname = path.dirname(__filename);
 
 const BASE_DB_PATH = path.join(__dirname, 'database.json');
 const LIVE_DB_PATH = path.join(__dirname, 'live_database.json');
-const PROXIES_PATH = path.join(__dirname, 'proxies.json');
 
-// Función para obtener un proxy aleatorio de la lista
-function getRandomProxy(proxyList) {
-    const randomIndex = Math.floor(Math.random() * proxyList.length);
-    return proxyList[randomIndex];
-}
+// --- LECTURA DE SECRETS ---
+const PROXY_HOST = process.env.PROXY_HOST;
+const PROXY_PORT = process.env.PROXY_PORT;
+const PROXY_USERNAME = process.env.PROXY_USERNAME;
+const PROXY_PASSWORD = process.env.PROXY_PASSWORD;
 
-async function resolveM3u8(iframeUrl, proxy) {
-    let browser = null;
-    const puppeteerOptions = {
-        headless: "new",
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            `--proxy-server=http://${proxy}` // Usamos el proxy para esta ejecución
-        ],
-    };
+async function resolveM3u8(iframeUrl) {
+    if (!PROXY_HOST || !PROXY_USERNAME || !PROXY_PASSWORD || !PROXY_PORT) {
+        console.log("  -> Faltan credenciales de proxy. Saltando resolución de este servidor.");
+        return null;
+    }
+    const proxyServer = `http://${PROXY_HOST}:${PROXY_PORT}`;
     
+    const puppeteerOptions = {
+        args: [
+            ...chromium.args,
+            `--proxy-server=${proxyServer}`
+        ],
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+        ignoreHTTPSErrors: true,
+    };
+
+    let browser = null;
     try {
         browser = await puppeteer.launch(puppeteerOptions);
         const page = await browser.newPage();
+
+        // Autenticación del proxy
+        await page.authenticate({
+            username: PROXY_USERNAME,
+            password: PROXY_PASSWORD,
+        });
+        
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36');
         
         let m3u8Url = null;
         const m3u8Promise = new Promise(resolve => {
             page.on('response', response => {
                 const url = response.url();
-                if (url.includes('.m3u8')) {
-                    if (!m3u8Url) {
-                        m3u8Url = url;
-                        resolve(url);
-                    }
+                if (url.includes('.m3u8') && !m3u8Url) {
+                    m3u8Url = url;
+                    resolve(url);
                 }
             });
         });
 
-        await page.goto(iframeUrl, { waitUntil: 'networkidle0', timeout: 30000 });
-        await Promise.race([m3u8Promise, new Promise(r => setTimeout(r, 15000))]);
+        await page.goto(iframeUrl, { waitUntil: 'networkidle0', timeout: 60000 });
+        await Promise.race([m3u8Promise, new Promise(r => setTimeout(r, 20000))]);
         return m3u8Url;
+
+    } catch (error) {
+        console.error(`\n    Error en Puppeteer con proxy: ${error.message.split('\n')[0]}`);
+        return null;
     } finally {
         if (browser) await browser.close();
     }
 }
 
 async function updateLiveDatabase() {
-    console.log(`[UPDATER] Iniciando ciclo de actualización con proxies públicos.`);
+    console.log(`[UPDATER] Iniciando ciclo de actualización.`);
     try {
         const baseDb = await fs.readJson(BASE_DB_PATH);
-        const proxyList = await fs.readJson(PROXIES_PATH);
-        if (!proxyList || proxyList.length === 0) {
-            console.error("[UPDATER] La lista de proxies está vacía. Abortando.");
-            return;
-        }
-
         const liveDb = {};
 
         for (const movieId in baseDb) {
@@ -73,20 +85,12 @@ async function updateLiveDatabase() {
 
             for (const server of movie.servers) {
                 process.stdout.write(`  -> Resolviendo: ${server.serverName}... `);
-                
-                const proxy = getRandomProxy(proxyList);
-                console.log(`(Usando proxy: ${proxy})`);
-                
-                try {
-                    const m3u8Url = await resolveM3u8(server.iframeUrl, proxy);
-                    if (m3u8Url) {
-                        process.stdout.write("    ÉXITO ✅\n");
-                        liveDb[movieId].servers.push({ ...server, m3u8Url, lastChecked: new Date().toISOString() });
-                    } else {
-                        process.stdout.write("    FALLO (Proxy o servidor no respondieron) ❌\n");
-                    }
-                } catch (e) {
-                    process.stdout.write(`    ERROR (Proxy ${proxy} probablemente muerto) ❗\n`);
+                const m3u8Url = await resolveM3u8(server.iframeUrl);
+                if (m3u8Url) {
+                    process.stdout.write("ÉXITO ✅\n");
+                    liveDb[movieId].servers.push({ ...server, m3u8Url, lastChecked: new Date().toISOString() });
+                } else {
+                    process.stdout.write("FALLO ❌\n");
                 }
             }
         }
