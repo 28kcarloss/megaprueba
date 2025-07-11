@@ -1,9 +1,11 @@
-import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium-min';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import chromium from '@sparticuz/chromium';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+puppeteer.use(StealthPlugin());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -44,9 +46,8 @@ async function resolveM3u8(iframeUrl) {
 }
 
 async function updateLiveDatabase() {
-    console.log(`[UPDATER] Iniciando ciclo de actualización con Sparticuz Chromium.`);
+    console.log(`[UPDATER] Iniciando ciclo con @sparticuz/chromium (completo).`);
     try {
-        await chromium.font('https://raw.githack.com/googlei18n/noto-cjk/main/NotoSansCJK-Regular.ttc');
         const baseDb = await fs.readJson(BASE_DB_PATH);
         const liveDb = {};
 
@@ -70,13 +71,10 @@ async function updateLiveDatabase() {
                 }
             }
         }
-
         await fs.writeJson(LIVE_DB_PATH, liveDb, { spaces: 2 });
         console.log(`\n[UPDATER] 'live_database.json' actualizado.`);
-
     } catch (error) {
         console.error(`\n[UPDATER] Error fatal:`, error);
-        // Lanzamos un error para que GitHub Actions marque el job como fallido
         throw error;
     }
 }
