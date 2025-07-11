@@ -1,27 +1,21 @@
-import puppeteer from 'puppeteer-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium-min';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-puppeteer.use(StealthPlugin());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const BASE_DB_PATH = path.join(__dirname, 'database.json');
 const LIVE_DB_PATH = path.join(__dirname, 'live_database.json');
 
-// Opciones de Puppeteer para el entorno sin pantalla de GitHub Actions
 const puppeteerOptions = {
-    headless: "new", // <-- ÚNICO CAMBIO: Lo volvemos a poner en modo "headless"
-    args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--window-size=1280,720', // Mantenemos el tamaño de ventana simulado
-        '--disable-notifications'
-    ],
-    ignoreDefaultArgs: ['--enable-automation'],
+    args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
+    executablePath: await chromium.executablePath(),
+    headless: chromium.headless,
+    ignoreHTTPSErrors: true,
 };
 
 async function resolveM3u8(iframeUrl) {
@@ -29,31 +23,20 @@ async function resolveM3u8(iframeUrl) {
     try {
         browser = await puppeteer.launch(puppeteerOptions);
         const page = await browser.newPage();
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36');
         
         let m3u8Url = null;
         const m3u8Promise = new Promise(resolve => {
             page.on('response', response => {
                 const url = response.url();
-                if (url.includes('.m3u8')) {
-                    if (!m3u8Url) {
-                        m3u8Url = url;
-                        resolve(url);
-                    }
+                if (url.includes('.m3u8') && !m3u8Url) {
+                    m3u8Url = url;
+                    resolve(url);
                 }
             });
         });
 
-        await page.goto(iframeUrl, { waitUntil: 'networkidle2', timeout: 60000 });
-
-        try {
-            await page.waitForSelector('body', { timeout: 5000 });
-            await page.mouse.click(640, 360, { delay: 100 });
-        } catch (e) {
-            // No hacemos nada si falla, puede ser normal
-        }
-        
-        await Promise.race([m3u8Promise, new Promise(r => setTimeout(r, 25000))]);
+        await page.goto(iframeUrl, { waitUntil: 'networkidle0', timeout: 45000 });
+        await Promise.race([m3u8Promise, new Promise(r => setTimeout(r, 15000))]);
         return m3u8Url;
     } finally {
         if (browser) await browser.close();
@@ -61,8 +44,9 @@ async function resolveM3u8(iframeUrl) {
 }
 
 async function updateLiveDatabase() {
-    console.log(`[UPDATER] Iniciando ciclo de actualización.`);
+    console.log(`[UPDATER] Iniciando ciclo de actualización con Sparticuz Chromium.`);
     try {
+        await chromium.font('https://raw.githack.com/googlei18n/noto-cjk/main/NotoSansCJK-Regular.ttc');
         const baseDb = await fs.readJson(BASE_DB_PATH);
         const liveDb = {};
 
@@ -92,6 +76,8 @@ async function updateLiveDatabase() {
 
     } catch (error) {
         console.error(`\n[UPDATER] Error fatal:`, error);
+        // Lanzamos un error para que GitHub Actions marque el job como fallido
+        throw error;
     }
 }
 
