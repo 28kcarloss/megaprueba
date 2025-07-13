@@ -4,108 +4,130 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reproductor</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        :root { --main-red: #e50914; --background-color: #141414; --card-color: #1f1f1f; --text-color: #f5f5f5; }
+        :root { --main-red: #e50914; --background-color: #141414; --card-color: #1f1f1f; --text-color: #f5f5f5; --success-green: #28a745; }
         body { font-family: 'Inter', sans-serif; background-color: var(--background-color); color: var(--text-color); margin: 0; }
         .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
         .back-link { color: #ccc; text-decoration: none; display: inline-block; margin-bottom: 2rem; font-size: 1.1rem; }
         .back-link:hover { color: var(--main-red); }
-        .player-wrapper { margin-bottom: 2rem; }
-        .plyr--video { border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); --plyr-color-main: var(--main-red); }
+        .player-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background-color: #000;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        #video-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
         .section-title { font-size: 1.5rem; border-bottom: 2px solid var(--main-red); padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
         .server-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }
         .server-list button { width: 100%; padding: 1rem; background-color: var(--card-color); border: 1px solid #333; color: var(--text-color); border-radius: 8px; cursor: pointer; font-size: 1rem; text-align: left; transition: all 0.2s ease; }
         .server-list button:hover:not(:disabled), .server-list button.active { background-color: var(--main-red); border-color: var(--main-red); transform: translateY(-2px); }
-        .server-list button:disabled { opacity: 0.6; cursor: not-allowed; }
-        #video-area { width: 100%; aspect-ratio: 16 / 9; background-color: #000; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .info-message { text-align: center; color: #aaa; padding: 2rem; }
+        .info-message { text-align: center; color: #aaa; padding: 4rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; }
+
+        .adguard-guide {
+            background-color: #2a2a2a;
+            border-left: 5px solid var(--success-green);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .adguard-guide h3 { margin-top: 0; color: var(--success-green); }
+        .adguard-guide p { line-height: 1.6; margin: 0.5rem 0; }
+        .adguard-guide code { background-color: #111; padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace; }
+        .adguard-guide a { color: var(--main-red); text-decoration: none; font-weight: bold; }
+        .adguard-guide a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <div class="container">
         <a href="index.html" class="back-link">‹ Volver al Catálogo</a>
         <h1 id="movie-title">Cargando...</h1>
-        <div class="player-wrapper">
-             <div id="video-area">
-                <p class="info-message">Selecciona una opción de servidor para comenzar.</p>
-            </div>
+
+        <div class="adguard-guide">
+            <h3>🎬 Para ver sin anuncios (Recomendado)</h3>
+            <p>
+                Este sitio funciona mejor con un bloqueador de anuncios a nivel de red. Es una configuración <strong>gratuita y de un solo paso</strong> en tu dispositivo que bloquea anuncios en muchas apps y sitios web.
+            </p>
+            <p>
+                Visita <a href="https://adguard-dns.io/es/public-dns.html" target="_blank">la guía oficial de AdGuard DNS</a>, elige tu sistema (Windows, Android, etc.) y sigue las instrucciones del **"Método 2"**. Solo tienes que copiar estas direcciones DNS:
+            </p>
+            <p>
+                DNS Preferido: <code>94.140.14.14</code><br>
+                DNS Alternativo: <code>94.140.15.15</code>
+            </p>
         </div>
-        <h2 class="section-title">Opciones Disponibles</h2>
+
+        <div class="player-wrapper" id="player-container">
+            <p class="info-message">Selecciona una opción de servidor para comenzar.</p>
+        </div>
+
+        <h2 class="section-title">Opciones de Servidor</h2>
         <ul class="server-list" id="server-list"></ul>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const videoArea = document.getElementById('video-area');
+            const playerContainer = document.getElementById('player-container');
             const movieTitle = document.getElementById('movie-title');
             const serverList = document.getElementById('server-list');
-            let player, hls;
 
             const urlParams = new URLSearchParams(window.location.search);
             const tmdbId = urlParams.get('id');
-            if (!tmdbId) { movieTitle.textContent = 'Error: ID de película no encontrado.'; return; }
+
+            if (!tmdbId) {
+                movieTitle.textContent = 'Error: ID de película no encontrado.';
+                return;
+            }
 
             try {
-                const response = await fetch('/live_database.json');
-                if (!response.ok) throw new Error('La base de datos de videos no está disponible. El robot actualizador está trabajando, por favor intenta más tarde.');
+                const response = await fetch('/database.json');
+                if (!response.ok) throw new Error('No se pudo cargar la base de datos de películas.');
                 
-                const liveDb = await response.json();
-                const movie = liveDb[tmdbId];
+                const database = await response.json();
+                const movie = database[tmdbId];
                 if (!movie) throw new Error('Película no encontrada.');
-                
+
                 movieTitle.textContent = movie.title;
                 document.title = `Reproduciendo: ${movie.title}`;
                 serverList.innerHTML = '';
 
-                const validServers = movie.servers.filter(s => s.m3u8Url);
-
-                if (validServers.length > 0) {
-                    validServers.forEach((server, index) => {
+                if (movie.servers && movie.servers.length > 0) {
+                    movie.servers.forEach((server, index) => {
                         const li = document.createElement('li');
                         const button = document.createElement('button');
                         button.textContent = `Opción ${index + 1} (${server.language} - ${server.serverName})`;
+                        
                         button.onclick = () => {
                             setActiveButton(button);
-                            playM3u8(server.m3u8Url);
+                            loadIframe(server.iframeUrl);
                         };
                         li.appendChild(button);
                         serverList.appendChild(li);
                     });
-                    // Opcional: Iniciar la primera opción automáticamente
-                    if(serverList.querySelector('button')) {
-                        serverList.querySelector('button').click();
-                    }
                 } else {
-                     serverList.innerHTML = '<p>No hay servidores funcionales en este momento. El robot actualizador está trabajando. Intenta de nuevo en unas horas.</p>';
+                    serverList.innerHTML = '<p>No hay servidores disponibles para esta película.</p>';
                 }
-            } catch (error) { 
-                movieTitle.textContent = `Error al cargar`;
-                serverList.innerHTML = `<p style="color:var(--main-red);">${error.message}</p>`;
+            } catch (error) {
+                movieTitle.textContent = `Error: ${error.message}`;
             }
 
-            function setActiveButton(activeButton) { 
-                document.querySelectorAll('#server-list button').forEach(btn => btn.classList.remove('active')); 
-                activeButton.classList.add('active'); 
+            function setActiveButton(activeButton) {
+                document.querySelectorAll('#server-list button').forEach(btn => btn.classList.remove('active'));
+                activeButton.classList.add('active');
             }
 
-            function playM3u8(url) {
-                videoArea.innerHTML = '<video id="video-player-runtime" playsinline controls></video>';
-                const newVideoElement = document.getElementById('video-player-runtime');
-                
-                if (player) player.destroy();
-                if (hls) hls.destroy();
-
-                if (Hls.isSupported()) {
-                    hls = new Hls(); 
-                    hls.loadSource(url); 
-                    hls.attachMedia(newVideoElement);
-                } else {
-                    newVideoElement.src = url;
-                }
-                player = new Plyr(newVideoElement, { autoplay: true });
+            function loadIframe(iframeUrl) {
+                playerContainer.innerHTML = `<iframe src="${iframeUrl}" allow="autoplay; fullscreen" sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"></iframe>`;
             }
         });
     </script>

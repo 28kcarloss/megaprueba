@@ -1,19 +1,16 @@
 {
-  "name": "videoteca-automatizada-final",
+  "name": "videoteca-frontend-simple",
   "version": "1.0.0",
-  "description": "Videoteca con actualizador automático vía GitHub Actions",
+  "description": "Videoteca estática con guía AdGuard DNS",
   "type": "module",
   "scripts": {
-    "scrape-base": "node scraper.js",
-    "update-live-local": "node updater.js",
-    "deploy-vercel": "vercel --prod"
+    "scrape": "node scraper.js",
+    "deploy": "vercel --prod"
   },
   "dependencies": {
-    "@sparticuz/chromium": "^123.0.1",
     "fs-extra": "^11.2.0",
     "node-fetch": "^3.3.2",
     "puppeteer": "^22.10.0",
-    "puppeteer-core": "^22.10.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2"
   }

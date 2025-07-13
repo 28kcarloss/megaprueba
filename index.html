@@ -40,15 +40,15 @@
             const TMDB_API_KEY = '44a281a88c65bfa293fccc36ef45ebdd';
 
             try {
-                const response = await fetch('/live_database.json');
-                if (!response.ok) throw new Error('La base de datos de videos no está disponible. El sitio se actualizará pronto.');
+                const response = await fetch('/database.json');
+                if (!response.ok) throw new Error('No se encontró database.json. Ejecuta `npm run scrape` para generarlo.');
                 
                 const database = await response.json();
                 const moviesArray = Object.keys(database).map(key => ({ id: key, ...database[key] }));
                 moviesArray.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
 
                 if (moviesArray.length === 0) {
-                    loader.textContent = "No hay películas disponibles en este momento.";
+                    loader.textContent = "No hay películas en la base de datos.";
                     return;
                 }
                 loader.remove();
@@ -56,7 +56,7 @@
                 const movieCardPromises = moviesArray.map(async (movie) => {
                     try {
                         const posterResponse = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}`);
-                        if (!posterResponse.ok) throw new Error('Fallo en la API de TMDB');
+                        if (!posterResponse.ok) return null;
                         const tmdbData = await posterResponse.json();
                         
                         const posterPath = tmdbData.poster_path 

@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer'; 
+import puppeteer from 'puppeteer';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,10 +8,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // --- CONFIGURACIÓN ---
+// Añade aquí los IDs de las películas que quieres
 const TARGET_IDS = [
     '823464', // Godzilla x Kong
     '507089'  // Five Nights at Freddy's
 ];
+// Estos son los servidores que guardaremos
 const ALLOWED_SERVERS = ['streamwish', 'filemoon', 'vidhide'];
 // --------------------
 
@@ -20,7 +22,7 @@ const DATABASE_PATH = path.join(__dirname, 'database.json');
 const TMDB_API_KEY = '44a281a88c65bfa293fccc36ef45ebdd';
 
 async function runScraper() {
-    console.log(`[SCRAPER] --- INICIANDO BÚSQUEDA DE IFRAMES (SOLO SERVIDORES PERMITIDOS) ---`);
+    console.log(`[SCRAPER] --- INICIANDO BÚSQUEDA DE IFRAMES (Servidores: ${ALLOWED_SERVERS.join(', ')}) ---`);
     const browser = await puppeteer.launch({ headless: "new" });
     const existingDb = await fs.readJson(DATABASE_PATH).catch(() => ({}));
 
@@ -34,20 +36,26 @@ async function runScraper() {
     }
     await browser.close();
     await fs.writeJson(DATABASE_PATH, existingDb, { spaces: 2 });
-    console.log("\n[SCRAPER] --- SCRAPING FINALIZADO. 'database.json' actualizado con servidores filtrados. ---");
+    console.log("\n[SCRAPER] --- SCRAPING FINALIZADO. 'database.json' ha sido actualizado. ---");
 }
 
 async function scrapeMovie(browser, tmdbId, db) {
     const page = await browser.newPage();
     try {
         const movieDetails = await getMovieDetailsFromTmdb(tmdbId);
-        if (!movieDetails) return;
+        if (!movieDetails) {
+            console.log(`[SCRAPER] No se encontraron detalles para ${tmdbId} en TMDb.`);
+            return;
+        }
         
         const movieUrl = `${CUEVANA_BASE_URL}/pelicula/${tmdbId}/ver`;
         await page.goto(movieUrl, { waitUntil: 'networkidle2' });
         
         const nextData = await page.evaluate(() => JSON.parse(document.getElementById('__NEXT_DATA__')?.textContent || '{}'));
-        if (!nextData?.props?.pageProps?.thisMovie) return;
+        if (!nextData?.props?.pageProps?.thisMovie) {
+            console.log(`[SCRAPER] No se encontró la estructura de datos en la página de la película.`);
+            return;
+        }
 
         let allServers = [];
         const processVideos = (videoList, language) => {
@@ -68,10 +76,11 @@ async function scrapeMovie(browser, tmdbId, db) {
             db[tmdbId] = { 
                 title: movieDetails.title, 
                 releaseDate: movieDetails.releaseDate, 
-                servers: allServers,
-                lastScraped: new Date().toISOString()
+                servers: allServers
             };
             console.log(`[SCRAPER] ${allServers.length} iframes filtrados y guardados para "${movieDetails.title}".`);
+        } else {
+            console.log(`[SCRAPER] No se encontró ninguno de los servidores permitidos para esta película.`);
         }
     } finally {
         await page.close();
