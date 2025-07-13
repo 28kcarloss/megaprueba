@@ -1,17 +1,19 @@
 {
-  "name": "videoteca-frontend-simple",
+  "name": "videoteca-proxy-filtro",
   "version": "1.0.0",
-  "description": "Videoteca estática con guía AdGuard DNS",
+  "description": "Videoteca con filtro de anuncios en el lado del servidor",
   "type": "module",
   "scripts": {
     "scrape": "node scraper.js",
     "deploy": "vercel --prod"
   },
   "dependencies": {
+    "@sparticuz/chromium-min": "^123.0.1",
     "fs-extra": "^11.2.0",
     "node-fetch": "^3.3.2",
-    "puppeteer": "^22.10.0",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "puppeteer-core": "^22.10.0"
+  },
+  "devDependencies": {
+    "puppeteer": "^22.10.0"
   }
 }

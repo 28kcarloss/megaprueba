@@ -8,54 +8,48 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // --- CONFIGURACIÓN ---
-// Añade aquí los IDs de las películas que quieres
 const TARGET_IDS = [
     '823464', // Godzilla x Kong
     '507089'  // Five Nights at Freddy's
 ];
-// Estos son los servidores que guardaremos
 const ALLOWED_SERVERS = ['streamwish', 'filemoon', 'vidhide'];
 // --------------------
 
 const CUEVANA_BASE_URL = 'https://www.cuevana.is';
-const DATABASE_PATH = path.join(__dirname, 'database.json');
+// ¡IMPORTANTE! El scraper ahora guarda el database.json dentro de la carpeta 'public'
+const DATABASE_PATH = path.join(__dirname, 'public', 'database.json');
 const TMDB_API_KEY = '44a281a88c65bfa293fccc36ef45ebdd';
 
 async function runScraper() {
     console.log(`[SCRAPER] --- INICIANDO BÚSQUEDA DE IFRAMES (Servidores: ${ALLOWED_SERVERS.join(', ')}) ---`);
+    await fs.ensureDir(path.join(__dirname, 'public')); // Asegura que la carpeta public exista
     const browser = await puppeteer.launch({ headless: "new" });
-    const existingDb = await fs.readJson(DATABASE_PATH).catch(() => ({}));
+    const db = {}; // Empezamos con una base de datos limpia cada vez
 
     for (const tmdbId of TARGET_IDS) {
         console.log(`\n[SCRAPER] Procesando película: ${tmdbId}`);
         try {
-            await scrapeMovie(browser, tmdbId, existingDb);
+            await scrapeMovie(browser, tmdbId, db);
         } catch (error) {
             console.error(`[SCRAPER] Error en ${tmdbId}: ${error.message}`);
         }
     }
     await browser.close();
-    await fs.writeJson(DATABASE_PATH, existingDb, { spaces: 2 });
-    console.log("\n[SCRAPER] --- SCRAPING FINALIZADO. 'database.json' ha sido actualizado. ---");
+    await fs.writeJson(DATABASE_PATH, db, { spaces: 2 });
+    console.log("\n[SCRAPER] --- SCRAPING FINALIZADO. 'public/database.json' ha sido creado/actualizado. ---");
 }
 
 async function scrapeMovie(browser, tmdbId, db) {
     const page = await browser.newPage();
     try {
         const movieDetails = await getMovieDetailsFromTmdb(tmdbId);
-        if (!movieDetails) {
-            console.log(`[SCRAPER] No se encontraron detalles para ${tmdbId} en TMDb.`);
-            return;
-        }
+        if (!movieDetails) return;
         
         const movieUrl = `${CUEVANA_BASE_URL}/pelicula/${tmdbId}/ver`;
         await page.goto(movieUrl, { waitUntil: 'networkidle2' });
         
         const nextData = await page.evaluate(() => JSON.parse(document.getElementById('__NEXT_DATA__')?.textContent || '{}'));
-        if (!nextData?.props?.pageProps?.thisMovie) {
-            console.log(`[SCRAPER] No se encontró la estructura de datos en la página de la película.`);
-            return;
-        }
+        if (!nextData?.props?.pageProps?.thisMovie) return;
 
         let allServers = [];
         const processVideos = (videoList, language) => {
@@ -79,8 +73,6 @@ async function scrapeMovie(browser, tmdbId, db) {
                 servers: allServers
             };
             console.log(`[SCRAPER] ${allServers.length} iframes filtrados y guardados para "${movieDetails.title}".`);
-        } else {
-            console.log(`[SCRAPER] No se encontró ninguno de los servidores permitidos para esta película.`);
         }
     } finally {
         await page.close();
