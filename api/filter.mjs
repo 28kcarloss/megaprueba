@@ -19,45 +19,43 @@ export default async function handler(req, res) {
 
     const { url: iframeUrl } = req.query;
     if (!iframeUrl) {
-        return res.status(400).send('<h1>Error: Falta el parámetro ?url= en la petición.</h1>');
+        return res.status(400).send('<h1>Error: Falta el parámetro ?url=</h1>');
     }
 
     let browser = null;
     try {
         browser = await puppeteer.launch(puppeteerOptions);
         const page = await browser.newPage();
-        await page.goto(iframeUrl, { waitUntil: 'domcontentloaded', timeout: 25000 });
 
-        await page.evaluate(() => {
-            const style = document.createElement('style');
-            style.textContent = `
-                /* Ocultar capas de anuncios, pop-ups y cualquier cosa que no sea el video */
-                body > *:not(video):not(#player):not(.player) {
-                    display: none !important;
-                    visibility: hidden !important;
+        // --- OPTIMIZACIÓN CLAVE ---
+        // Bloqueamos todos los recursos innecesarios para ahorrar memoria y tiempo
+        await page.setRequestInterception(true);
+        page.on('request', (request) => {
+            if (['image', 'stylesheet', 'font', 'script'].includes(request.resourceType())) {
+                // Abortamos todo excepto los scripts que podrían ser del reproductor.
+                // Es una suposición, pero a menudo los scripts de reproductores no tienen extensiones obvias.
+                if (request.resourceType() === 'script' && !request.url().includes('player')) {
+                    request.abort();
+                } else {
+                    request.continue();
                 }
-                iframe[src*="ad"], div[class*="ads"], div[id*="ads"] {
-                    display: none !important;
-                    visibility: hidden !important;
-                    pointer-events: none !important;
+            } else {
+                request.continue();
+            }
+        });
+        // -------------------------
+
+        await page.goto(iframeUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
+
+        // Inyectamos CSS para ocultar anuncios y maximizar el video
+        await page.addStyleTag({
+            content: `
+                body, html { overflow: hidden !important; margin: 0; padding: 0; background-color: #000; }
+                iframe, .ad, [id*="ad"], [class*="ad"] { display: none !important; }
+                #player, video, .video-container, .player-container {
+                    position: fixed !important; top: 0; left: 0; width: 100% !important; height: 100% !important; z-index: 9999;
                 }
-                /* Forzar el reproductor a ocupar toda la pantalla */
-                body, html {
-                    overflow: hidden !important;
-                    margin: 0;
-                    padding: 0;
-                    background-color: #000;
-                }
-                #player, .player, .video-js, .jwplayer, video, #video-container {
-                    position: absolute !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                    width: 100vw !important;
-                    height: 100vh !important;
-                    z-index: 99999;
-                }
-            `;
-            document.head.appendChild(style);
+            `
         });
 
         const cleanHtml = await page.content();
@@ -65,8 +63,7 @@ export default async function handler(req, res) {
         res.send(cleanHtml);
 
     } catch (error) {
-        console.error(`[Filtro] Error: ${error.message}`);
-        // Si falla, redirigimos al iframe original como último recurso
+        console.error(`[Filtro] Crash en la función: ${error.message}`);
         res.setHeader('Location', iframeUrl);
         return res.status(302).end();
     } finally {
